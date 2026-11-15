@@ -21,10 +21,10 @@ public class Patient {
      * @throws IllegalArgumentException if name or mobileNumber is empty
      */
     public Patient(String name, String mobileNumber) {
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Patient name cannot be empty.");
         }
-        if (mobileNumber == null || mobileNumber.isBlank()) {
+        if (mobileNumber == null || mobileNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Mobile number cannot be empty.");
         }
         this.name = name;

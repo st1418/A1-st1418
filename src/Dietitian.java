@@ -37,3 +37,4 @@ public class Dietitian extends HealthProfessional {
         return sb.toString();
     }
 }
+

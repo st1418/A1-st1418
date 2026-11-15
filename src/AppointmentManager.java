@@ -1,4 +1,3 @@
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,15 +14,16 @@ import java.util.List;
  *   - Return meaningful success/failure messages
  *
  * Daily schedule: fixed time slots from 08:00 to 16:00 in 30-minute intervals.
+ * Time is represented as int minutes since midnight (08:00 = 480, 16:00 = 960).
  */
 public class AppointmentManager {
 
     // The collection of all appointments
     private final List<Appointment> appointments;
 
-    // Fixed daily schedule: 08:00 - 16:00 in 30-minute slots
-    private static final LocalTime SCHEDULE_START = LocalTime.of(8, 0);
-    private static final LocalTime SCHEDULE_END = LocalTime.of(16, 0);
+    // Fixed daily schedule: 08:00 - 16:00 in 30-minute slots (stored as minutes since midnight)
+    private static final int SCHEDULE_START_MIN = 8 * 60;    // 480 = 08:00
+    private static final int SCHEDULE_END_MIN = 16 * 60;      // 960 = 16:00
     private static final int SLOT_MINUTES = 30;
 
     /**
@@ -51,15 +51,16 @@ public class AppointmentManager {
         for (Appointment existing : appointments) {
             boolean sameProfessional = existing.getHealthProfessional().equals(
                     appointment.getHealthProfessional());
-            boolean sameTime = existing.getTime().equals(appointment.getTime());
+            boolean sameTime = existing.getTimeInMinutes() == appointment.getTimeInMinutes();
             if (sameProfessional && sameTime) {
-                return "FAIL: This professional is already booked at " + appointment.getTime() + ".";
+                return "FAIL: This professional is already booked at "
+                        + appointment.getTimeFormatted() + ".";
             }
         }
 
         appointments.add(appointment);
         return "SUCCESS: Appointment added for " + appointment.getPatient().getName() +
-               " at " + appointment.getTime() + " with " +
+               " at " + appointment.getTimeFormatted() + " with " +
                appointment.getHealthProfessional().getName() + ".";
     }
 
@@ -116,22 +117,26 @@ public class AppointmentManager {
      * Cancels an appointment identified by professional ID + appointment time.
      *
      * @param professionalId the professional's ID
-     * @param time           the appointment time slot
+     * @param timeInMinutes  the appointment time slot in minutes since midnight
      * @return success or failure message
      */
-    public String cancelByProfessionalAndTime(String professionalId, LocalTime time) {
+    public String cancelByProfessionalAndTime(String professionalId, int timeInMinutes) {
         for (int i = 0; i < appointments.size(); i++) {
             Appointment appt = appointments.get(i);
             boolean matchId = appt.getHealthProfessional().getId().equals(professionalId);
-            boolean matchTime = appt.getTime().equals(time);
+            boolean matchTime = appt.getTimeInMinutes() == timeInMinutes;
             if (matchId && matchTime) {
                 appointments.remove(i);
                 return "SUCCESS: Cancelled appointment for " + appt.getPatient().getName() +
-                       " with " + appt.getHealthProfessional().getName() + " at " + time + ".";
+                       " with " + appt.getHealthProfessional().getName() + " at " +
+                       appt.getTimeFormatted() + ".";
             }
         }
+        // Format the failed time for display
+        int h = timeInMinutes / 60;
+        int m = timeInMinutes % 60;
         return "FAIL: No appointment found for professional ID " + professionalId +
-               " at " + time + ".";
+               " at " + String.format("%02d:%02d", h, m) + ".";
     }
 
     /**
@@ -158,15 +163,16 @@ public class AppointmentManager {
 
     /**
      * Returns the fixed daily schedule slots (08:00, 08:30, 09:00, ..., 16:00).
+     * Each slot is represented as an int (minutes since midnight).
      *
-     * @return list of LocalTime slots
+     * @return list of time slots in minutes since midnight
      */
-    public List<LocalTime> getDailySchedule() {
-        List<LocalTime> slots = new ArrayList<>();
-        LocalTime current = SCHEDULE_START;
-        while (!current.isAfter(SCHEDULE_END)) {
+    public List<Integer> getDailySchedule() {
+        List<Integer> slots = new ArrayList<>();
+        int current = SCHEDULE_START_MIN;
+        while (current <= SCHEDULE_END_MIN) {
             slots.add(current);
-            current = current.plusMinutes(SLOT_MINUTES);
+            current = current + SLOT_MINUTES;
         }
         return slots;
     }
@@ -178,3 +184,4 @@ public class AppointmentManager {
         return appointments.size();
     }
 }
+

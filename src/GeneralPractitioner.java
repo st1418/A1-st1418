@@ -49,3 +49,4 @@ public class GeneralPractitioner extends HealthProfessional {
         return sb.toString();
     }
 }
+

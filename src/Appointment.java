@@ -1,12 +1,10 @@
-import java.time.LocalTime;
-
 /**
  * Appointment - represents a single appointment linking a patient to a
  * health professional at a specific time.
  *
  * An Appointment:
  *   - works with ANY type of HealthProfessional (polymorphism via the base class)
- *   - uses LocalTime for time, which is naturally comparable for sorting
+ *   - stores time as an int (minutes since midnight), which is naturally comparable
  *   - implements Comparable so Collections.sort() can order by time
  *   - ensures it can never exist in an incomplete state (all-or-nothing constructor)
  */
@@ -14,29 +12,29 @@ public class Appointment implements Comparable<Appointment> {
 
     private final Patient patient;
     private final HealthProfessional healthProfessional;
-    private final LocalTime time;
+    private final int timeInMinutes;   // e.g. 09:00 = 540, 16:00 = 960
 
     /**
      * Constructor - creates a valid, complete appointment.
      *
      * @param patient             the patient booking the appointment
      * @param healthProfessional  any type of health professional (GP, Specialist, etc.)
-     * @param time                the appointment time slot
-     * @throws IllegalArgumentException if any parameter is null
+     * @param timeInMinutes       the appointment time in minutes since midnight (0-1439)
+     * @throws IllegalArgumentException if any parameter is null/invalid
      */
-    public Appointment(Patient patient, HealthProfessional healthProfessional, LocalTime time) {
+    public Appointment(Patient patient, HealthProfessional healthProfessional, int timeInMinutes) {
         if (patient == null) {
             throw new IllegalArgumentException("Patient cannot be null.");
         }
         if (healthProfessional == null) {
             throw new IllegalArgumentException("Health professional cannot be null.");
         }
-        if (time == null) {
-            throw new IllegalArgumentException("Appointment time cannot be null.");
+        if (timeInMinutes < 0 || timeInMinutes >= 1440) {
+            throw new IllegalArgumentException("Time must be between 0 and 1439 minutes.");
         }
         this.patient = patient;
         this.healthProfessional = healthProfessional;
-        this.time = time;
+        this.timeInMinutes = timeInMinutes;
     }
 
     // ---------- Getters ----------
@@ -49,8 +47,19 @@ public class Appointment implements Comparable<Appointment> {
         return healthProfessional;
     }
 
-    public LocalTime getTime() {
-        return time;
+    public int getTimeInMinutes() {
+        return timeInMinutes;
+    }
+
+    /**
+     * Returns the appointment time formatted as "HH:MM".
+     *
+     * @return formatted time string, e.g. "09:00"
+     */
+    public String getTimeFormatted() {
+        int hours = timeInMinutes / 60;
+        int minutes = timeInMinutes % 60;
+        return String.format("%02d:%02d", hours, minutes);
     }
 
     // ---------- Comparable ----------
@@ -64,7 +73,7 @@ public class Appointment implements Comparable<Appointment> {
      */
     @Override
     public int compareTo(Appointment other) {
-        return this.time.compareTo(other.time);
+        return this.timeInMinutes - other.timeInMinutes;
     }
 
     // ---------- Object overrides ----------
@@ -76,7 +85,7 @@ public class Appointment implements Comparable<Appointment> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("========================================\n");
-        sb.append("Appointment Time: ").append(time).append("\n");
+        sb.append("Appointment Time: ").append(getTimeFormatted()).append("\n");
         sb.append("----------------------------------------\n");
         sb.append(patient.toString()).append("\n");
         sb.append("----------------------------------------\n");
@@ -92,11 +101,11 @@ public class Appointment implements Comparable<Appointment> {
         Appointment other = (Appointment) obj;
         return this.patient.equals(other.patient)
             && this.healthProfessional.equals(other.healthProfessional)
-            && this.time.equals(other.time);
+            && this.timeInMinutes == other.timeInMinutes;
     }
 
     @Override
     public int hashCode() {
-        return patient.hashCode() + healthProfessional.hashCode() + time.hashCode();
+        return patient.hashCode() + healthProfessional.hashCode() + Integer.hashCode(timeInMinutes);
     }
 }

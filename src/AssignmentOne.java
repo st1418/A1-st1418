@@ -1,4 +1,3 @@
-import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,12 +130,12 @@ public class AssignmentOne {
         System.out.println("--- SCENARIO 1: Adding Appointments ---\n");
 
         // Book several appointments across different professionals and times
-        Appointment appt1 = new Appointment(patient1, drSmith, LocalTime.of(9, 0));
-        Appointment appt2 = new Appointment(patient2, drWang, LocalTime.of(9, 30));
-        Appointment appt3 = new Appointment(patient3, drChen, LocalTime.of(10, 0));
-        Appointment appt4 = new Appointment(patient4, msBrown, LocalTime.of(10, 30));
-        Appointment appt5 = new Appointment(patient5, drSmith, LocalTime.of(11, 0));
-        Appointment appt6 = new Appointment(patient1, drWang, LocalTime.of(14, 0));
+        Appointment appt1 = new Appointment(patient1, drSmith, 9 * 60);       // 09:00
+        Appointment appt2 = new Appointment(patient2, drWang, 9 * 60 + 30);    // 09:30
+        Appointment appt3 = new Appointment(patient3, drChen, 10 * 60);       // 10:00
+        Appointment appt4 = new Appointment(patient4, msBrown, 10 * 60 + 30);  // 10:30
+        Appointment appt5 = new Appointment(patient5, drSmith, 11 * 60);       // 11:00
+        Appointment appt6 = new Appointment(patient1, drWang, 14 * 60);      // 14:00
 
         System.out.println(manager.addAppointment(appt1));
         System.out.println(manager.addAppointment(appt2));
@@ -152,12 +151,12 @@ public class AssignmentOne {
 
         // Error 1: Double-booking the same professional at same time
         System.out.println("[Error] Try double-booking Dr. Smith at 09:00:");
-        Appointment dupAppt = new Appointment(patient3, drSmith, LocalTime.of(9, 0));
+        Appointment dupAppt = new Appointment(patient3, drSmith, 9 * 60);       // 09:00
         System.out.println("  " + manager.addAppointment(dupAppt));
 
         // Error 2: Double-booking Dr. Wang at 09:30
         System.out.println("[Error] Try double-booking Dr. Wang at 09:30:");
-        Appointment dupAppt2 = new Appointment(patient4, drWang, LocalTime.of(9, 30));
+        Appointment dupAppt2 = new Appointment(patient4, drWang, 9 * 60 + 30);  // 09:30
         System.out.println("  " + manager.addAppointment(dupAppt2));
 
         // =========================================
@@ -180,7 +179,7 @@ public class AssignmentOne {
         List<Appointment> smithAppts = manager.viewByProfessionalId("1001");
         System.out.println("Found " + smithAppts.size() + " appointment(s) for Dr. Smith:\n");
         for (Appointment appt : smithAppts) {
-            System.out.println(appt.getTime() + " - " + appt.getPatient().getName());
+            System.out.println(appt.getTimeFormatted() + " - " + appt.getPatient().getName());
         }
 
         // Filter by non-existent professional
@@ -196,7 +195,7 @@ public class AssignmentOne {
         List<Appointment> aliceAppts = manager.viewByPatientPhone("0411222333");
         System.out.println("Found " + aliceAppts.size() + " appointment(s) for Alice Johnson:\n");
         for (Appointment appt : aliceAppts) {
-            System.out.println("  " + appt.getTime() + " with " +
+            System.out.println("  " + appt.getTimeFormatted() + " with " +
                     appt.getHealthProfessional().getName() + " [" +
                     appt.getHealthProfessional().getClass().getSimpleName() + "]");
         }
@@ -206,11 +205,11 @@ public class AssignmentOne {
         // =========================================
         System.out.println("\n--- SCENARIO 6: Cancel Appointment by Professional + Time ---\n");
 
-        System.out.println(manager.cancelByProfessionalAndTime("1001", LocalTime.of(11, 0)));
+        System.out.println(manager.cancelByProfessionalAndTime("1001", 11 * 60));   // 11:00
 
         // Error: Cancel non-existent
         System.out.println("\n[Error] Cancel non-existent appointment (9999 at 08:00):");
-        System.out.println("  " + manager.cancelByProfessionalAndTime("9999", LocalTime.of(8, 0)));
+        System.out.println("  " + manager.cancelByProfessionalAndTime("9999", 8 * 60));
 
         // =========================================
         // SCENARIO 7: Cancel by patient phone
@@ -232,7 +231,7 @@ public class AssignmentOne {
         List<Appointment> finalAppts = manager.getAllAppointments();
         System.out.println("Total remaining: " + finalAppts.size() + " appointment(s)\n");
         for (Appointment appt : finalAppts) {
-            System.out.println("  " + appt.getTime() + " | " +
+            System.out.println("  " + appt.getTimeFormatted() + " | " +
                     appt.getPatient().getName() + " | " +
                     appt.getHealthProfessional().getName() + " [" +
                     appt.getHealthProfessional().getClass().getSimpleName() + "]");
@@ -243,10 +242,16 @@ public class AssignmentOne {
         // =========================================
         System.out.println("\n--- SCENARIO 9: Clinic Daily Schedule ---\n");
 
-        List<LocalTime> schedule = manager.getDailySchedule();
+        List<Integer> schedule = manager.getDailySchedule();
         System.out.println("Clinic Hours: 08:00 - 16:00 (30-min intervals)");
         System.out.println("Total slots: " + schedule.size());
-        System.out.println("Slots: " + schedule);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < schedule.size(); i++) {
+            int t = schedule.get(i);
+            sb.append(String.format("%02d:%02d", t / 60, t % 60));
+            if (i < schedule.size() - 1) sb.append(", ");
+        }
+        System.out.println("Slots: " + sb.toString());
 
         // =========================================
         // SUMMARY

@@ -1,0 +1,12 @@
+I acknowledge that I have used Generative AI tools to complete this assessment
+in accordance with the conditions outlined in the Assessment Brief.
+
+I used Trae (AI coding assistant) to:
+  - Explore and understand OOP design patterns for the medical appointment system
+  - Debug compilation errors and runtime issues during development
+  - Explain object-oriented concepts (encapsulation, inheritance, abstraction, polymorphism)
+  - Research Java API usage (enum, abstract class, Comparable, LocalTime, Collections.sort)
+
+All code was written with my full understanding of how each class and method works,
+and I am able to explain every part of my solution. Comments were written by myself
+to document my own design decisions. The video was created independently by me.

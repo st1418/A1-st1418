@@ -37,7 +37,7 @@ public abstract class HealthProfessional {
             throw new IllegalArgumentException("ID must contain only numbers.");
         }
         // Validate name is not null/empty
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty.");
         }
         // Defensive copy of workingDays to prevent external modification
